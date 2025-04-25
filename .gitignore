@@ -1,11 +1,18 @@
 /.phpunit.cache
 /node_modules
+/Modules/Admin/node_modules
 /public/build
 /public/hot
 /public/storage
+/public/build-admin/
+/public/build-user/
 /storage/*.key
 /storage/pail
 /vendor
+./composer.lock
+package-lock.json
+/Modules/Admin/composer.lock
+/Modules/Admin/package-lock.json
 .env
 .env.backup
 .env.production
@@ -21,4 +28,3 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
-composer.lock

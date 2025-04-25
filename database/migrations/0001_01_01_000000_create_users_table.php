@@ -15,12 +15,16 @@ return new class() extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->uuid();
             $table->string('name');
             $table->string('email')->unique();
+            $table->tinyInteger('status')->comment('1: active | 2: in active | 3: pending');
+            $table->tinyInteger('role')->comment('1: Admin | 2: SystemAdmin | 3: User');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -31,7 +35,8 @@ return new class() extends Migration
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
+            $table->foreignId('admin_user_id')->nullable()->index();
+            $table->bigInteger('web_user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');
