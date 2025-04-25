@@ -9,7 +9,7 @@
     <!-- theme meta -->
     <meta name="theme-name" content="quixlab"/>
 
-    <title>Quixlab - Bootstrap Admin Dashboard Template by Themefisher.com</title>
+    <title>{!! config('admin.name') !!} - @yield('title')</title>
     <!-- Favicon icon -->
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('template-admin/images/favicon.png') }}">
     <!-- Pignose Calender -->
@@ -20,6 +20,7 @@
     <!-- Custom Stylesheet -->
     <link href="{{ asset('template-admin/css/style.css') }}" rel="stylesheet">
 
+    {{ module_vite('build-admin', 'resources/assets/sass/app.scss') }}
 </head>
 
 <body>
@@ -36,7 +37,11 @@
     @include('admin::layouts.navigation')
 
     <div class="content-body">
-        @yield('main-body')
+        <div class="container-fluid">
+            @include('admin::layouts.includes.alert-messages')
+
+            @yield('main-body')
+        </div>
     </div>
 
     @include('admin::layouts.footer')

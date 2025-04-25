@@ -1,5 +1,6 @@
 @extends('admin::layouts.main')
 
+@section('title', 'Dashboard')
 @section('main-body')
     <div class="container-fluid mt-3">
         <div class="row">
