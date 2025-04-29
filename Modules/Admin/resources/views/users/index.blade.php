@@ -12,7 +12,7 @@
                         <a href="{{ route('admin.users.create') }}" class="btn btn-success"><i class="fa fa-plus"></i> Create User</a>
                     </div>
                     <div class="table-responsive">
-                        <table class="table table-striped">
+                        <table class="table table-striped user-list">
                             <thead>
                             <tr>
                                 <th>#</th>
@@ -55,7 +55,18 @@
                                             @endswitch
                                         </td>
                                         <td class="d-flex">
-                                            <a href="{{ route('admin.users.edit', $user->uuid) }}" class="btn btn-primary"><i class="fa fa-edit"></i> Edit</a>
+                                            <button
+                                                type="button"
+                                                class="btn btn-primary address-user"
+{{--                                                data-toggle="modal"--}}
+                                                data-user-uuid="{{ $user->uuid }}"
+                                                data-user-name="{{ $user->name }}"
+                                                data-url="{{ route('admin.users.listAddressByUser', $user->uuid) }}"
+                                            >
+                                                <i class="fa fa-map-marker"></i> View Address
+                                            </button>
+
+                                            <a href="{{ route('admin.users.edit', $user->uuid) }}" class="btn btn-primary ml-2"><i class="fa fa-edit"></i> Edit</a>
 
                                             <form action="{{ route('admin.users.destroy', $user->uuid) }}" method="post">
                                                 @csrf
@@ -66,7 +77,9 @@
                                     </tr>
                                 @endforeach
                             @else
-
+                                <tr>
+                                    <td colspan="5" class="text-center">No record</td>
+                                </tr>
                             @endif
                             </tbody>
                         </table>
@@ -78,4 +91,51 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="address-user" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="title-modal"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <input type="hidden" name="user_uuid">
+                <div class="modal-body"></div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary btn-create-address-by-user">Create New</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('.user-list').on('click', '.address-user', function () {
+                let url = $(this).data('url')
+                let user_uuid = $(this).data('user-uuid')
+                let user_name = $(this).data('user-name')
+
+                $('input[name=user_uuid]').val(user_uuid)
+                $('#title-modal').text(`Address by user: ${user_name}`)
+
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    success: function (response) {
+                        $('.modal-body').html(response)
+                        $('#address-user').modal('show')
+                    }
+                })
+            })
+
+            $('.btn-create-address-by-user').on('click', function () {
+                let user_uuid = $('input[name=user_uuid]').val();
+                window.location = `{{ route('admin.address.create') }}/${user_uuid}`
+            })
+        })
+    </script>
 @endsection

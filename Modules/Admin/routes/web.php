@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Route;
+use Modules\Admin\Http\Controllers\AddressController;
 use Modules\Admin\Http\Controllers\AuthController;
 use Modules\Admin\Http\Controllers\CategoryController;
 use Modules\Admin\Http\Controllers\DashboardController;
@@ -29,6 +30,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('/users/{user:uuid}/edit', [UserController::class, 'edit'])->name('edit');
             Route::patch('/users/{user:uuid}/update', [UserController::class, 'update'])->name('update');
             Route::delete('/users/{user:uuid}', [UserController::class, 'destroy'])->name('destroy');
+            Route::get('/users/list-address-by-user/{user:uuid}', [AddressController::class, 'listAddressByUser'])->name('listAddressByUser');
         });
 
         // Categories management
@@ -39,6 +41,16 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.'], function () {
             Route::get('/categories/{category:uuid}/edit', [CategoryController::class, 'edit'])->name('edit');
             Route::patch('/categories/{category:uuid}/update', [CategoryController::class, 'update'])->name('update');
             Route::delete('/categories/{category:uuid}', [CategoryController::class, 'destroy'])->name('destroy');
+        });
+
+        // Address Management
+        Route::group(['as' => 'address.'], function () {
+            Route::get('/address', [AddressController::class, 'index'])->name('index');
+            Route::get('/address/create/{user:uuid?}', [AddressController::class, 'create'])->name('create');
+            Route::post('/address/store', [AddressController::class, 'store'])->name('store');
+            Route::get('/address/{address:uuid}/edit', [AddressController::class, 'edit'])->name('edit');
+            Route::patch('/address/{address:uuid}/update', [AddressController::class, 'update'])->name('update');
+            Route::delete('/address/{address:uuid}', [AddressController::class, 'destroy'])->name('destroy');
         });
     });
 });

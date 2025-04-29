@@ -17,6 +17,11 @@
                     <i class="icon-user menu-icon"></i><span class="nav-text">Users Management</span>
                 </a>
             </li>
+            <li class="{{ request()->is('admin/address/*') ? 'active' : '' }}">
+                <a href="{{ route('admin.address.index') }}" aria-expanded="false" class="{{ request()->is('admin/address/*') ? 'active' : '' }}">
+                    <i class="icon-location-pin menu-icon"></i><span class="nav-text">Address Management</span>
+                </a>
+            </li>
         </ul>
     </div>
 </div>

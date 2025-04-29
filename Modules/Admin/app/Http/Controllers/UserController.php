@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Modules\Admin\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Models\Address;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Modules\Admin\Http\Requests\User\CreateRequest;
+use Illuminate\Support\Facades\Log;
+use Modules\Admin\Http\Requests\User\StoreRequest;
+use Modules\Admin\Http\Requests\User\UpdateRequest;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class UserController extends Controller
@@ -35,23 +38,22 @@ class UserController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(CreateRequest $request)
+    public function store(StoreRequest $request)
     {
-        $dataRequest = $request->validated();
-        $dataRequest = array_merge($dataRequest, [
-            'password' => Hash::make($dataRequest['password']),
-        ]);
+        try {
+            $dataRequest = $request->validated();
+            $dataRequest = array_merge($dataRequest, [
+                'password' => Hash::make($dataRequest['password']),
+            ]);
 
-        $result = User::create($dataRequest);
-        if (!$result) {
-            $status = 'error';
-            $message = 'Something went wrong';
-        } else {
-            $status = 'success';
-            $message = 'User created with id:' . $result->id . ' successfully';
+            $result = User::create($dataRequest);
+
+            return redirect()->route('admin.users.index')->with('success', 'User created with id:' . $result->id . ' successfully');
+        } catch (\Exception $exception) {
+            Log::error($exception->getMessage());
+
+            return redirect()->route('admin.users.index')->with('error', 'Something went wrong');
         }
-
-        return redirect()->route('admin.users.index')->with($status, $message);
     }
 
     /**
@@ -67,7 +69,8 @@ class UserController extends Controller
      */
     public function edit($uuid): View|RedirectResponse
     {
-        $detailUser = User::where('uuid', $uuid)->first();
+        $detailUser = User::where('uuid', $uuid)->with('address')->first();
+
         if (empty($detailUser)) {
             return redirect()->route('admin.users.index')->with('error', 'User not found');
         }
@@ -78,26 +81,37 @@ class UserController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $uuid)
+    public function update(UpdateRequest $request, $uuid)
     {
-        $detailUser = User::where('uuid', $uuid)->first();
-        if (empty($detailUser)) {
-            return redirect()->route('admin.users.index')->with('error', 'User not found');
+        try {
+            $detailUser = User::where('uuid', $uuid)->first();
+            if (empty($detailUser)) {
+                return redirect()->route('admin.users.index')->with('error', 'User not found');
+            }
+
+            $dataRequest = $request->validated();
+
+            DB::beginTransaction();
+
+            // Update information user by uuid
+            $detailUser->update($dataRequest);
+
+            // Remove address default
+            Address::where('user_id', $detailUser->id)->update(['is_default' => 0]);
+            // Add address default
+            Address::where('id', $dataRequest['address'])->where('user_id', $detailUser->id)->update([
+                'is_default' => 1,
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('admin.users.index')->with('success', 'User updated successfully');
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception->getMessage());
+
+            return redirect()->route('admin.users.index')->with('error', 'Something went wrong');
         }
-
-        $dataRequest = $request->only(['name', 'email', 'status', 'role']);
-
-        $result = $detailUser->update($dataRequest);
-
-        if (!$result) {
-            $status = 'error';
-            $message = 'Something went wrong';
-        } else {
-            $status = 'success';
-            $message = 'User updated successfully';
-        }
-
-        return redirect()->route('admin.users.index')->with($status, $message);
     }
 
     /**
@@ -105,20 +119,28 @@ class UserController extends Controller
      */
     public function destroy($uuid)
     {
-        $detailUser = User::where('uuid', $uuid)->first();
-        if (empty($detailUser)) {
-            return redirect()->route('admin.users.index')->with('error', 'User not found');
-        }
+        try {
+            $detailUser = User::where('uuid', $uuid)->first();
+            if (empty($detailUser)) {
+                return redirect()->route('admin.users.index')->with('error', 'User not found');
+            }
 
-        $result = $detailUser->delete();
-        if (!$result) {
-            $status = 'error';
-            $message = 'Something went wrong';
-        } else {
-            $status = 'success';
-            $message = 'User deleted successfully';
-        }
+            $getAllAddressByUser = Address::where('user_id', $detailUser->id);
+            DB::beginTransaction();
+            if (count($getAllAddressByUser->get()) > 0) {
+                $getAllAddressByUser->delete();
+            }
 
-        return redirect()->route('admin.users.index')->with($status, $message);
+            $detailUser->delete();
+
+            DB::commit();
+
+            return redirect()->route('admin.users.index')->with('success', 'User deleted successfully');
+        } catch (\Exception $exception) {
+            DB::rollBack();
+            Log::error($exception->getMessage());
+
+            return redirect()->route('admin.users.index')->with('error', 'Something went wrong');
+        }
     }
 }
