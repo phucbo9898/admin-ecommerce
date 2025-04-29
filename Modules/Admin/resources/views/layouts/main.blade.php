@@ -21,6 +21,12 @@
     <link href="{{ asset('template-admin/css/style.css') }}" rel="stylesheet">
 
     {{ module_vite('build-admin', 'resources/assets/sass/app.scss') }}
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .badge {
+            padding: 0.25em 0.4em;
+        }
+    </style>
 </head>
 
 <body>

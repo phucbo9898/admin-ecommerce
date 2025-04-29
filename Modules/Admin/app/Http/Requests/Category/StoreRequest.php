@@ -2,11 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Modules\Admin\Http\Requests\User;
+namespace Modules\Admin\Http\Requests\Category;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class CreateRequest extends FormRequest
+class StoreRequest extends FormRequest
 {
     /**
      * Get the validation rules that apply to the request.
@@ -14,11 +15,7 @@ class CreateRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'max:40'],
-            'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'between:6,20'],
-            'status' => ['required', 'in:1,2,3'],
-            'role' => ['required', 'in:1,2,3'],
+            'name' => ['required', Rule::unique('categories')->whereNull('deleted_at'), 'max:40'],
         ];
     }
 

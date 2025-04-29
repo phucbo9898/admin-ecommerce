@@ -16,10 +16,11 @@ return new class() extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->uuid();
-            $table->string('name');
-            $table->string('email')->unique();
             $table->tinyInteger('status')->comment('1: active | 2: in active | 3: pending');
             $table->tinyInteger('role')->comment('1: Admin | 2: SystemAdmin | 3: User');
+            $table->string('name');
+            $table->string('email');
+            $table->string('avatar')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->rememberToken();
@@ -42,6 +43,17 @@ return new class() extends Migration
             $table->longText('payload');
             $table->integer('last_activity')->index();
         });
+
+        Schema::create('address', function (Blueprint $table) {
+            $table->id();
+            $table->uuid();
+            $table->integer('user_id');
+            $table->text('address');
+            $table->tinyInteger('is_default')->default(0)->comment('0: not default, 1: default');
+            $table->integer('last_modified_by');
+            $table->timestamps();
+            $table->softDeletes();
+        });
     }
 
     /**
@@ -52,5 +64,6 @@ return new class() extends Migration
         Schema::dropIfExists('users');
         Schema::dropIfExists('password_reset_tokens');
         Schema::dropIfExists('sessions');
+        Schema::dropIfExists('address');
     }
 };

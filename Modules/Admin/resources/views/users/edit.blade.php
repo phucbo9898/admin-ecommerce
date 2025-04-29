@@ -8,7 +8,7 @@
             <div class="card">
                 <div class="card-body">
                     <div class="card-title">
-                        <h4>Users Edit: {{ $detailUser->name ?? '' }}</h4>
+                        <h4>Users Edit: <span class="text-green">{{ $detailUser->name ?? '' }}</span></h4>
                     </div>
                     <div class="basic-form">
                         <form action="{{ route('admin.users.update', $detailUser->uuid) }}" method="POST">
@@ -61,6 +61,22 @@
                                             <input class="form-check-input" type="radio" name="role" value="3" {{ $detailUser->role === User::USER ? 'checked' : '' }}>
                                             <label class="form-check-label">User</label>
                                         </div>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <fieldset class="form-group">
+                                <div class="row">
+                                    <label class="col-form-label col-sm-2 pt-0">Address</label>
+                                    <div class="col-sm-10">
+                                        @dump(old())
+                                        @if(count($detailUser->address) > 0)
+                                            @foreach($detailUser->address as $address)
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="address" value="{{ $address->id }}" {{ old('address') == $address->id || $address->is_default === 1 ? 'checked' : '' }}>
+                                                    <label class="form-check-label">{{ $address->address }}</label>
+                                                </div>
+                                            @endforeach
+                                        @endif
                                     </div>
                                 </div>
                             </fieldset>

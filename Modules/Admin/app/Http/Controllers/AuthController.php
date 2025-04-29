@@ -37,7 +37,7 @@ class AuthController extends Controller
             return back()->withInput()->with('error', 'Account not found');
         }
 
-        if ($getInfoUser->role !== User::ADMIN) {
+        if (!in_array($getInfoUser->role, [User::ADMIN, User::SYSTEM_ADMIN])) {
             return back()->withInput()->with('error', 'Access denied');
         }
 
